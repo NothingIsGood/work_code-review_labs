@@ -1,0 +1,7 @@
+teststr1: memstr 255
+teststr2: str 'Hello World!' ; Строки не содержат запятых!
+lenstr2: equ $ - teststr2; Можно и с счётиком размещения
+code:
+ aload lenstr2
+ out teststr2
+ end code

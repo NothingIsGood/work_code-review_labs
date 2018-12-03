@@ -1,0 +1,29 @@
+ org 1200         ; Указали счётчик размещения 1200
+number: memint 1  ; Зарезервировали целое число
+result: int 0     ; Определили целое число - результат
+zero: int 0       ; Аналогично = просто нуль-переменная
+counter: int 1    ; Для инкремента
+get_bits: proc    ; Возвращает число единичных бит числа
+ push number      ; Кладём число
+ push zero        ; И ноль
+ icmp             ; Сравнение с нулём
+ jz finish_proc   ; Если ноль, то переходим к концу
+ push result      ; Иначе кладём результат
+ push counter     ; Кладём единицу
+ iadd             ; Инкрементируем
+ pop result       ; Сохраняем в result
+ push number      ; Загружаем число
+ push number      ; Второй раз
+ push counter     ; единица
+ isub             ; (n - 1)
+ and              ; n & (n - 1)
+ pop number       ; Сохраняем в n
+ jnz get_bits     ; Если не ноль -- идём в начало
+finish_proc:
+ ret              ; Выходим
+ endp get_bits
+start:
+ ini number       ; Вводим число
+ call get_bits    ; Вызов процедуры
+ outi result      ; Выводим результат
+ end start        ; Начинаем с этой метки

@@ -1,0 +1,12 @@
+ org 100
+a: memint 2   ; два целых числа
+res: memint 1 ; результат
+code:
+ ini a              ; Вводим a[0]
+ ini a + SIZE_INT   ; Вводим a[1]
+ push a             ; Загружаем в стек
+ push a + SIZE_INT
+ iadd               ; Складываем
+ pop res            ; Сохраняем по адресу
+ outi res           ; Выводим
+ end code

@@ -1,0 +1,28 @@
+; Программа 4 -- дробная арифметика
+; Вычисление функции x * x + (e^(0.05 + x) * ln(x) + sqrt(x*x*x))
+x: memflt 1
+x_sqr: memflt 1
+res: memflt 1
+const: float 5.0e-2
+code:
+ inf x        ; Ввод x
+ push x       ; В стеке x
+ push x       ; В стеке x x
+ fmul         ; В стеке x^2
+ peek x_sqr   ; Сохранили
+ push x       ; В стеке x^2 x
+ fmul         ; В стеке x^3
+ fsqrt        ; В стеке sqrt(x^3)
+ push x       ; В стеке sqrt(x^3) x
+ flog         ; В стеке sqrt(x^3) log(x)
+ push x       ; В стеке sqrt(x^3) log(x) x
+ push const   ; В стеке sqrt(x^3) log(x) x 0.05
+ fadd         ; В стеке sqrt(x^3) log(x) x+0.05
+ fexp         ; В стеке sqrt(x^3) log(x) e^(x+0.05)
+ fmul         ; В стеке sqrt(x^3) log(x) * e^(x+0.05)
+ fadd         ; В стеке sqrt(x^3) + log(x) * e^(x+0.05)
+ push x_sqr   ; Добавляем x ^ 2
+ fadd         ; Сложили
+ pop res      ; Вытолкнули в res
+ outf res     ; Вывели res
+ end code

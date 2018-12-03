@@ -1,0 +1,20 @@
+counter: define 5
+ while #counter != 0
+ push #counter
+counter: set #counter - 1
+ endw
+
+ if 5 > 4
+ push #counter
+ endif
+
+max: macro a, b
+ if %a > %b
+ push %a
+ else
+ push %b
+ endif
+ endm
+
+ max 0xff, 12
+ max #counter, -1
