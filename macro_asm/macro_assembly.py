@@ -37,6 +37,8 @@
     ; whileexpression is true
     endw
     
+    include filename
+    
 """
 from expression_eval import eval_expr
 from parser_tools import ParserTool
@@ -57,6 +59,7 @@ ENDR_TOKEN = "endr"
 WHILE_TOKEN = "while"
 ENDW_TOKEN = "endw"
 IF_TOKEN = "if"
+INCLUDE_TOKEN = "include"
 
 
 
@@ -92,6 +95,7 @@ class MacroAssembly(object):
         '''
         macro_header = self.all_file[idx]
         res = MacroCode(macro_header.label, macro_header.arguments)
+        res.data = []
         
         idx += 1 #next element
         current = self.all_file[idx]
@@ -104,6 +108,7 @@ class MacroAssembly(object):
         if idx == len(self.all_file): raise ValueError("endm not found for macro")
         
         self.macro_table[macro_header.label] = res
+        
         return idx
         
     def work(self):
@@ -247,7 +252,6 @@ class MacroAssembly(object):
         
         if len(self.all_file[pos].arguments) != 1:
             raise Exception('invalid num params')
-            
         
         expr_str = ParserTool.parse_assembly_string(self.__check_defines(pos)).arguments[0][:]
         expr_result = bool(eval_expr(expr_str))
@@ -304,6 +308,19 @@ class MacroAssembly(object):
             raise Exception(f"variable {label} has never defined")
         return pos
     
+    def parse_include(self, pos: int):
+        '''
+        Логика обработки include -- удаляем
+        '''
+        if len(self.all_file[pos].arguments) != 1:
+            raise Exception('invalid num params')
+            
+        filename = str(eval_expr(ParserTool.parse_assembly_string(self.__check_defines(pos)).arguments[0]))
+        
+        self.all_file = self.all_file[:pos] + [ParserTool.parse_assembly_string(s) for s in open(filename).readlines()] + self.all_file[pos + 1:]
+        
+        return pos - 1
+    
     def __check_defines(self, pos: int):
         '''
         Выполнение подстановки в исходнную строку файла
@@ -338,6 +355,7 @@ class MacroAssembly(object):
         
         #print(self.variables)
         #print(self.all_file[pos].source)
+        
         work_str = copy.deepcopy(self.all_file[pos])
         
         work_str.source = self.__check_defines(pos)
@@ -361,6 +379,8 @@ class MacroAssembly(object):
             return_pos = self.parse_while(pos)
         elif work_str.code == REPT_TOKEN:
             return_pos = self.parse_rept(pos)
+        elif work_str.code == INCLUDE_TOKEN:
+            return_pos = self.parse_include(pos)
         elif work_str.code in self.macro_table.keys():
             self.output_file += MacroAssembly.evaluate([ParserTool.parse_assembly_string(asm_op) 
                                                         for asm_op in self.macro_table[work_str.code]

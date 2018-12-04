@@ -1,0 +1,8 @@
+
+min: macro a, b
+ if %a < %b
+ push %a
+ else
+ push %b
+ endif
+ endm

@@ -18,3 +18,8 @@ max: macro a, b
 
  max 0xff, 12
  max #counter, -1
+
+ include 'module.txt'
+
+ min -123, 123
+ min 1000, 0
