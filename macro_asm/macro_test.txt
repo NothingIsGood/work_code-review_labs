@@ -23,3 +23,5 @@ max: macro a, b
 
  min -123, 123
  min 1000, 0
+
+#counter#counter

@@ -34,6 +34,37 @@ public:
     {
         int int_val;
         float float_val;
+
+
+        template<typename T>
+        T getValue() const noexcept;
+
+        template<>
+        int getValue<int>() const noexcept
+        {
+            return int_val;
+        }
+
+        template<>
+        float getValue<float>() const noexcept
+        {
+            return float_val;
+        }
+
+        template<typename T>
+        void setValue(T val) noexcept;
+
+        template<>
+        void setValue<int>(int val) noexcept
+        {
+            int_val = val;
+        };
+
+        template<>
+        void setValue<float>(float val) noexcept
+        {
+            float_val = val;
+        };
     };
 
     using stack_type = std::array<stack_value, MaxStackSize>;
@@ -226,22 +257,19 @@ public:
 };
 
 // Арифметика -- 2 аргумента
+
 template <typename T>
-class MathTwoArgs;
-
-template <>
-class MathTwoArgs<float> : public Command_1_Byte // Бинарные математические функции
+class MathTwoArgs : public Command_1_Byte // Бинарные математические функции
 {
 public:
-    using T = float;
     explicit MathTwoArgs(std::function<T(T, T)> f) : Command_1_Byte() {func_ = std::move(f);}
     void operator()(Processor& proc, proc_union un) override
     {
         T arg1{}; T arg2 {};
         // Проверки типов
 
-        arg1 = proc.pop().float_val;
-        arg2 = proc.pop().float_val;
+        arg1 = proc.pop().getValue<T>();
+        arg2 = proc.pop().getValue<T>();
 
         T res{};
         if (un.code_8.b) // бит b отвечает за порядок аргументов в бинарной функции, для некоторых операций разницы в порядке нет
@@ -251,8 +279,8 @@ public:
 
         Processor::stack_value val {};
 
-        val.float_val = res;
-        proc.setFlags(val.float_val);
+        val.setValue<T>(res);
+        proc.setFlags(val.getValue<T>());
 
         proc.push(val);
 
@@ -261,36 +289,6 @@ private:
     std::function <T(T, T)> func_;
 };
 
-template <>
-class MathTwoArgs<int> : public Command_1_Byte // Бинарные математические функции
-{
-public:
-    using T = int;
-    explicit MathTwoArgs(std::function<T(T, T)> f) : Command_1_Byte() {func_ = std::move(f);}
-    void operator()(Processor& proc, proc_union un) override
-    {
-        T arg1{}; T arg2 {};
-        // Проверки типов
-        arg1 = proc.pop().int_val;
-        arg2 = proc.pop().int_val;
-
-        T res{};
-        if (un.code_8.b) // бит b отвечает за порядок аргументов в бинарной функции, для некоторых операций разницы в порядке нет
-            res = func_(arg1, arg2);
-        else
-            res = func_(arg2, arg1);
-
-        Processor::stack_value val {};
-
-        val.int_val = res;
-        proc.setFlags(val.int_val);
-
-        proc.push(val);
-
-    }
-private:
-    std::function <T(T, T)> func_;
-};
 
 // Унарная арифметика
 template <typename T>
@@ -305,36 +303,15 @@ public:
     void operator()(Processor& proc, proc_union un) override
     {
 
-        T arg = proc.pop().float_val;
+        T arg = proc.pop().getValue<T>();
         T res = func_(arg);
 
         Processor::stack_value val {};
-        val.float_val = res;
-        proc.setFlags(val.float_val);
+        val.setValue<T>(res);
+        proc.setFlags(val.getValue<T>());
 
         proc.push(val);
 
-    }
-private:
-    std::function <T(T)> func_;
-};
-
-template <> // Для целых чисел
-class MathOneArg<int> : public Command_1_Byte // Поддержка унарных математических функций
-{
-public:
-    using T = int;
-    explicit MathOneArg(std::function<T(T)> f) : Command_1_Byte() {func_ = std::move(f);}
-    void operator()(Processor& proc, proc_union un) override
-    {
-        T arg = proc.pop().int_val;
-        T res = func_(arg);
-
-        Processor::stack_value val {};
-        val.int_val = res;
-        proc.setFlags(val.int_val);
-
-        proc.push(val);
     }
 private:
     std::function <T(T)> func_;
@@ -541,21 +518,17 @@ public:
 };
 
 template <typename T>
-class CommandCMP;
-
-template <>
-class CommandCMP<int> : public Command_1_Byte
+class CommandCMP : public Command_1_Byte
 {
 public:
-    using T = int;
     void operator()(Processor& proc, proc_union un) override
     {
         // Аналогично командам арифметики, только без добавления в стек
         T arg1{}; T arg2 {};
         // Проверки типов
 
-        arg1 = proc.pop().int_val;
-        arg2 = proc.pop().int_val;
+        arg1 = proc.pop().getValue<T>();
+        arg2 = proc.pop().getValue<T>();
 
         T res{};
         if (un.code_8.b) // бит b отвечает за порядок аргументов в бинарной функции, для некоторых операций разницы в порядке нет
@@ -565,33 +538,8 @@ public:
 
         Processor::stack_value val {};
 
-        val.int_val = res;
-        proc.setFlags(val.int_val);
-    }
-};
-
-template <>
-class CommandCMP<float> : public Command_1_Byte
-{
-public:
-    using T = float;
-    void operator()(Processor& proc, proc_union un) override
-    {
-        // Аналогично командам арифметики, только без добавления в стек
-        T arg1{}; T arg2 {};
-        // Проверки типов
-        arg1 = proc.pop().float_val;
-        arg2 = proc.pop().float_val;
-
-        T res{};
-        if (un.code_8.b) // бит b отвечает за порядок аргументов в бинарной функции, для некоторых операций разницы в порядке нет
-            res = arg1 - arg2;
-        else
-            res = arg2 - arg1;
-
-        Processor::stack_value val {};
-        val.float_val = res;
-        proc.setFlags(val.float_val);
+        val.setValue<T>(res);
+        proc.setFlags(val.getValue<T>());
     }
 };
 

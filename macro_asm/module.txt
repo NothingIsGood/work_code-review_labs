@@ -6,3 +6,12 @@ min: macro a, b
  push %b
  endif
  endm
+
+foo: macro pred
+ if %pred == 1
+ push %pred
+ endif
+ endm
+
+abbb: define 0
+ foo #abbb + 1

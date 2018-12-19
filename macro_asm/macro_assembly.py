@@ -37,7 +37,9 @@
     ; whileexpression is true
     endw
     
-    include filename
+    include 'filename'
+    
+    ipython launch = runfile('C:/clion_proj/code-review_labs/macro_asm/macro_assembly.py', wdir='C:/clion_proj/code-review_labs/macro_asm', args='macro_test.txt out.txt')
     
 """
 from expression_eval import eval_expr
@@ -45,6 +47,7 @@ from parser_tools import ParserTool
 from asm_tools import MacroCode
 
 import copy # для глубокого копирования
+import sys
 
 MACRO_TOKEN = "macro"
 ENDM_TOKEN = "endm"
@@ -64,7 +67,7 @@ INCLUDE_TOKEN = "include"
 
 
 class MacroAssembly(object):
-    def __init__(self, filename : str = ""):
+    def __init__(self, filename : str = "", filename_out : str = ""):
         '''
         @param filename -- имя файла с кодом на языке ассемблера
         all_file = вектор строк
@@ -72,7 +75,8 @@ class MacroAssembly(object):
         output_file = выходной файл (вектор строк)
         
         '''
-        self.filename = filename;
+        self.filename = filename
+        self.filename_out = filename_out
         self.all_file = [] # список структур -- операторов ассемблера
         self.macro_table = {} # dict <str, MacroOperator>
         self.output_file = [] 
@@ -103,9 +107,10 @@ class MacroAssembly(object):
         while idx < len(self.all_file) and current.code != ENDM_TOKEN:
             res.data.append(self.all_file[idx])
             idx += 1
-            current = self.all_file[idx]
+            if idx < len(self.all_file):
+                current = self.all_file[idx]
             
-        if idx == len(self.all_file): raise ValueError("endm not found for macro")
+        if idx == len(self.all_file): raise Exception(f"endm not found for macro \"{res.name}\"")
         
         self.macro_table[macro_header.label] = res
         
@@ -115,20 +120,24 @@ class MacroAssembly(object):
         '''
         Основной цикл работы макропроцессора
         '''
-        self.__open_file()
-        idx = 0
-        idx = self.statements(idx)
-        
         try:
-            pass
+            self.__open_file()
+            idx = 0
+            idx = self.statements(idx)
         except Exception as e:
-            print(f'Macro Assembly Error: {e}')
+            ex_str = f'Macro Assembly Error: {e}'
+            if self.output_file:
+                self.output_file[-1] += f";{ex_str}"
+            else:
+                self.output_file.append(ParserTool.parse_assembly_string(f";{ex_str}"))
+            print(ex_str)
             
-        output_filename = f'{self.filename}.macro.asm'
+        output_filename = self.filename_out
         with open(output_filename, 'w') as fs:
             for str_asm in self.output_file:
                 fs.write(str_asm)
                 #print(str_asm, end = '')
+        print("MacroAssembler finished his work")
             
     def parse_ifdef(self, pos: int):
         '''
@@ -330,19 +339,21 @@ class MacroAssembly(object):
         '''
         
         # подстановка уровня 2
+        
         res = copy.deepcopy(self.all_file[pos].source)
         for key in self.variables.keys():
             replace_name = '##' + key
-            if res.find(replace_name):
+            if res.find(replace_name) != -1:
                 res = res.replace(replace_name, f'\'str(self.variables[key])\'')
         
         # подстановка уровня 1
         for key in self.variables.keys():
             replace_name = '#' + key
-            if res.find(replace_name):
+            if res.find(replace_name) != -1:
                 res = res.replace(replace_name, str(self.variables[key]))
+                
         return res
-        
+    
     
     def statement(self, pos: int):
         '''
@@ -399,7 +410,7 @@ class MacroAssembly(object):
         while return_pos < len(self.all_file):
             return_pos = self.statement(return_pos)
         return return_pos
-            
+    
     @staticmethod
     def evaluate(source: list, macro_names: dict, variables: dict):
         '''
@@ -417,9 +428,17 @@ class MacroAssembly(object):
         pos = 0
         tmp_masm.statements(pos)
         return tmp_masm.output_file[:]
+            
     
 if __name__ == "__main__":
-    #TODO Использовать аргументы командной строки
-    m = MacroAssembly("macro_test.txt")
-    m.work()
+    if len(sys.argv) == 3:
+        filename_source = sys.argv[1]
+        filename_dest = sys.argv[2]
+        
+        m = MacroAssembly(filename_source, filename_dest)
+        m.work()
+    else:
+        print(f'Error: Invalid number of args: {len(sys.argv)}')
+    
+    
     #print(m.output_file)

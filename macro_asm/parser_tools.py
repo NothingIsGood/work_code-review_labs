@@ -7,6 +7,15 @@ Created on Mon Dec 3 2018
 
 from asm_tools import AssemblyOperator
 from enum import Enum, unique
+'''
+class AssemblyError(object):
+    def __init__(self, pos: int, message: str):
+        self.pos = pos
+        self.message = message
+    
+    def __str__(self):
+        return f'Error in Line {self.pos}: \"{self.message}\"'
+'''
 
 class ParserTool(object):
     @staticmethod
@@ -41,8 +50,21 @@ class ParserTool(object):
 
         return res
     
-    @staticmethod    
+    @staticmethod
     def parse_assembly_string(command_asm: str):
+        # делегирование работы конечному автомату для игнорирования синтаксически неверных строк
+        res = AssemblyOperator()
+        try:
+            res = ParserTool.__parse_string(command_asm)
+        except Exception as e:
+            res = AssemblyOperator()
+            res.source = command_asm[:]
+            
+        return res
+        
+    
+    @staticmethod    
+    def __parse_string(command_asm: str):
         '''
         Простой анализатор строки на ассемблере
         Приводит к структуре оператора ассемблера

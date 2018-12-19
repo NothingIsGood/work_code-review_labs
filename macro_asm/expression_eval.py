@@ -43,5 +43,5 @@ def eval_(node):
         _op = operators[type(node.ops[0])]
         return _op(left, right)
     else:
-        raise TypeError(node)
+        raise Exception("Invalid Operation in macroexpression")
 

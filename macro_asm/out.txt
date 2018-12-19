@@ -1,0 +1,9 @@
+ push 5
+ push 4
+ push 3
+ push 2
+ push 1
+
+ push 0
+
+;Macro Assembly Error: endm not found for macro "max"
