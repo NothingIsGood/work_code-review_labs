@@ -5,7 +5,7 @@
 - Макропеременные
 - Макроподстановки и макросы (без вложенных макросов)
 
-    value: define 'stringexpression'
+        value: define 'stringexpression'
         value: define expression
         
         #value ;подстановка полученного значения
