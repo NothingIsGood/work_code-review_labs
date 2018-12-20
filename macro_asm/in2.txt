@@ -1,0 +1,16 @@
+message: define 'Hello World!'
+ ifdef 'message'
+value_output: str 'Program says: #message'
+ else
+value_output: str 'Program says nothing'
+ endif
+
+ ifndef 'message'
+newstr: str 'Nobody see it'
+ endif
+
+ if 5 < 2
+ push 123
+ else
+ push 321
+ endif

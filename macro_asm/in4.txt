@@ -1,0 +1,10 @@
+counter: define 5 + 2
+ rept #counter
+ push #counter
+ endr
+
+n: define 10
+ while #n != 0
+ push #n
+n: set #n - 1
+ endw

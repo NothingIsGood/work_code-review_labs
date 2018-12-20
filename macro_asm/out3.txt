@@ -1,0 +1,8 @@
+ push 1
+value: str '1'
+
+ push False
+value2: str 'False'
+
+ call proc_name
+value3: str 'proc_name'

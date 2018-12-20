@@ -129,7 +129,7 @@ class MacroAssembly(object):
             if self.output_file:
                 self.output_file[-1] += f";{ex_str}"
             else:
-                self.output_file.append(ParserTool.parse_assembly_string(f";{ex_str}"))
+                self.output_file.append(f";{ex_str}")
             print(ex_str)
             
         output_filename = self.filename_out
@@ -244,7 +244,7 @@ class MacroAssembly(object):
                 return_pos = MacroAssembly.statement(self, return_pos)
                     
             if return_pos == len(self.all_file):
-                raise Exception('endw not found')
+                raise Exception('endr not found')
             
             n -= 1
             
@@ -344,7 +344,7 @@ class MacroAssembly(object):
         for key in self.variables.keys():
             replace_name = '##' + key
             if res.find(replace_name) != -1:
-                res = res.replace(replace_name, f'\'str(self.variables[key])\'')
+                res = res.replace(replace_name, f'\'{str(self.variables[key])}\'')
         
         # подстановка уровня 1
         for key in self.variables.keys():

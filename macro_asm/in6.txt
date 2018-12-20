@@ -1,0 +1,12 @@
+ ifdef 'debug'
+abcdefg
+db: memstr 10
+db: memstr 20
+call a
+ call b
+d: int 'hello'
+ else
+qwerty
+abc
+ endif
+

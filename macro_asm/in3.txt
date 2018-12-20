@@ -1,0 +1,11 @@
+a: define 1
+ push #a
+value: str ##a
+
+b: define 5 < 3
+ push #b
+value2: str ##b
+
+c: define 'proc_name'
+ call #c
+value3: str ##c

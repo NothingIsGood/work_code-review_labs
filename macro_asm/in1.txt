@@ -1,0 +1,21 @@
+max: macro a, b
+ if %a > %b
+ push %a
+ else
+ push %b
+ endif
+ endm
+
+ max 0xff, 10
+ max 'Z', 'A'
+
+counter: define 5
+cycle: macro
+ if #counter > 0
+ push #counter
+counter: set #counter - 1
+ cycle
+ endif
+ endm
+
+ cycle
